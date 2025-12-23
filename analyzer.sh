@@ -7,7 +7,8 @@ if [ "$#" -lt 2 ]; then
 fi
 
 LOG_FILE=$1
-OUTPUT_DIR=$2
+OUTPUT_DIR=$(realpath "$2")
+
 
 # ---  Checking the input file ---
 
@@ -53,6 +54,26 @@ fi
 
 RESULT_FILE="$OUTPUT_DIR/$newname"
 
-grep "Test" "$LOG_FILE" > "$RESULT_FILE"
+# --- Text processing with sed ---
+
+# 1. Replace all tabs with spaces
+# 2. Remove spaces at the beginning and end of each line.
+# 3. We collapse several spaces in a row into one
+# 4. Removing empty lines
+# 5. We remove comments (lines with #), but we SKIP the first line if it contains #!
+sed -E '
+    # Replace tabs with spaces
+    s/\t/ /g;
+    # Remove spaces at the beginning and end
+    s/^[[:space:]]+//;
+    s/[[:space:]]+$//;
+    # Replace multiple spaces with single spaces
+    s/[[:space:]]+/ /g;
+    # Remove empty lines (after clearing spaces)
+    /^$/d;
+    # Remove comments except the first line with #!
+    1!{ /^#/d; }
+' "$LOG_FILE" > "$RESULT_FILE"
+
 echo "Checks passed. File created: $RESULT_FILE"
 
