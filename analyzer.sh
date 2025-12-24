@@ -2,7 +2,7 @@
 set -euo pipefail
 
 if [ "$#" -lt 2 ]; then
-    echo "usage: $0 <log_file> <output_dir> <--sanitize (optional)>"
+    echo "usage: $0 <log_file> <output_dir> [--sanitize (optional)]"
     exit 1
 fi
 
@@ -41,8 +41,17 @@ if [[ -z "$OUTPUT_DIR" ]]; then
     exit 1
 fi
 
+# Check that the second argument is not --sanitize
+if [[ "$OUTPUT_DIR" == "--sanitize" ]]; then
+        echo "It looks like you forgot to specify the directory path before --sanitize."
+        echo "Usage: $0 <log_file> <output_dir> [--sanitize (optional)]"
+        exit 1
+
+fi
+    
 # If the directory does not exist, create it.
 if [[ ! -d "$OUTPUT_DIR" ]]; then
+    
     echo "Directory '$OUTPUT_DIR' not found. Creating..."
     mkdir -p "$OUTPUT_DIR"
 fi
@@ -54,18 +63,17 @@ if [[ ! -w "$OUTPUT_DIR" ]]; then
 fi
 
 # Check --sanitize option
-if [ -n "$3" ]; then           # If 3 arg excist
+if [ -n "${3:-}" ]; then           # if third arg excist
     if [ "$3" == "--sanitize" ]; then
         SANITIZE_MODE=true
         echo "Sanitizing enabled"
-
     else
         echo "Ошибка: Неизвестная опция '$3'. Возможно, вы имели в виду --sanitize?"
         exit 1
     fi
 fi
 
-RESULT_FILE="$OUTPUT_DIR/$newname"
+CLEAN_FILE="$OUTPUT_DIR/$newname"
 
 # --- Text processing with sed ---
 
@@ -86,13 +94,19 @@ sed -E '
     /^$/d;
     # Remove comments except the first line with #!
     1!{ /^#/d; }
-' "$LOG_FILE" > "$RESULT_FILE"
+' "$LOG_FILE" > "$CLEAN_FILE"
+
+DIR_PATH=$(dirname "$CLEAN_FILE")
+FILE_NAME=$(basename "$CLEAN_FILE")
+SANITIZE_FILE="$DIR_PATH/sanitize_$FILE_NAME"
+
 if [ "$SANITIZE_MODE" = true ]; then
-    # Sanitize IPv4
-    sed -Ei 's/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/xxx.xxx.xxx.xxx/g' "$RESULT_FILE"
-    # Sanitize EMAIL
-    sed -Ei '2,$s/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/xxxxx@xxxxx.xx/g' "$RESULT_FILE"
+    sed -E \
+        -e '2,$s/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/xxx.xxx.xxx.xxx/g' \
+        -e '2,$s/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/xxxxx@xxxxx.xx/g' \
+        "$CLEAN_FILE" > "$SANITIZE_FILE"
+
+    echo "The cleaning result is saved in: $SANITIZE_FILE"
 fi
 
-echo "Checks passed. File created: $RESULT_FILE"
 
