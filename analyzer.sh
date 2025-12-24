@@ -88,7 +88,10 @@ sed -E '
     1!{ /^#/d; }
 ' "$LOG_FILE" > "$RESULT_FILE"
 if [ "$SANITIZE_MODE" = true ]; then
+    # Sanitize IPv4
     sed -Ei 's/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/xxx.xxx.xxx.xxx/g' "$RESULT_FILE"
+    # Sanitize EMAIL
+    sed -Ei '2,$s/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/xxxxx@xxxxx.xx/g' "$RESULT_FILE"
 fi
 
 echo "Checks passed. File created: $RESULT_FILE"
