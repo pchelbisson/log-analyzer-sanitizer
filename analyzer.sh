@@ -2,12 +2,13 @@
 set -euo pipefail
 
 if [ "$#" -lt 2 ]; then
-    echo "usage: $0 <log_file> <output_dir>"
+    echo "usage: $0 <log_file> <output_dir> <--sanitize (optional)>"
     exit 1
 fi
 
 LOG_FILE=$1
 OUTPUT_DIR=$(realpath "$2")
+SANITIZE_MODE=false
 
 
 # ---  Checking the input file ---
@@ -52,6 +53,18 @@ if [[ ! -w "$OUTPUT_DIR" ]]; then
     exit 1
 fi
 
+# Check --sanitize option
+if [ -n "$3" ]; then           # If 3 arg excist
+    if [ "$3" == "--sanitize" ]; then
+        SANITIZE_MODE=true
+        echo "Sanitizing enabled"
+
+    else
+        echo "Ошибка: Неизвестная опция '$3'. Возможно, вы имели в виду --sanitize?"
+        exit 1
+    fi
+fi
+
 RESULT_FILE="$OUTPUT_DIR/$newname"
 
 # --- Text processing with sed ---
@@ -74,6 +87,9 @@ sed -E '
     # Remove comments except the first line with #!
     1!{ /^#/d; }
 ' "$LOG_FILE" > "$RESULT_FILE"
+if [ "$SANITIZE_MODE" = true ]; then
+    sed -Ei 's/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/xxx.xxx.xxx.xxx/g' "$RESULT_FILE"
+fi
 
 echo "Checks passed. File created: $RESULT_FILE"
 
