@@ -1,0 +1,8 @@
+[2025-12-24 10:15:03] INFO: User login attempt. Username: admin, IP: 192.168.1.45, Email: admin@company.ru
+[2025-12-24 10:16:12] ERROR: Connection failed from 172.16.254.1. Timeout for user support@service.com
+[2025-12-24 10:18:45] WARNING: Unusual activity detected! Account: pchelbisson@gmail.com, Location: 95.161.224.11
+[2025-12-24 10:20:00] DEBUG: Syncing data for client_id=9982. Contact: dev-team@internal.net
+[2025-12-24 10:22:33] INFO: Password reset requested. IP: 8.8.8.8, Email: john.doe@outlook.com
+[2025-12-24 10:25:01] CRITICAL: Database breach attempt! Source IP: 10.0.0.154. Alert sent to security@provider.org
+[2025-12-24 10:30:15] INFO: File uploaded: report.pdf. User: manager@firm.com (IP: 192.168.0.101)
+[2025-12-24 10:35:44] ERROR: Payment declined. Customer: shop_user@yandex.ru, Gateway IP: 212.45.12.89
